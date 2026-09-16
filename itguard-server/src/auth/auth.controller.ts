@@ -1,4 +1,11 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+} from '@nestjs/common';
 
 import { AuthService } from './auth.service';
 import type { UserDTO } from './dto/auth.dto';
@@ -7,11 +14,17 @@ import type { UserDTO } from './dto/auth.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Get('log-in')
-  logIn() {
-    return 'log-in';
+  @HttpCode(HttpStatus.OK)
+  @Post('log-in')
+  logIn(@Body() user: UserDTO) {
+    return this.authService.logIn(user.email, user.password);
+  }
+  @Get('users')
+  getUsers() {
+    return this.authService.getUsers();
   }
 
+  @HttpCode(HttpStatus.CREATED)
   @Post('sign-up')
   signUp(@Body() user: UserDTO) {
     console.log({ user });
