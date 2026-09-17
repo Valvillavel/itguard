@@ -5,3 +5,7 @@ export interface signUpForm{
     password: FormControl<string>,
     confirmpass:FormControl<string>
 }
+export interface logInForm{
+    email: FormControl<string>,
+    password: FormControl<string>,
+}
