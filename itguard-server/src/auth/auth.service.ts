@@ -17,9 +17,7 @@ export class AuthService {
   async logIn(email: string, password: string) {
     try {
       const user = await this.prismaService.user.findUnique({
-        where: {
-          email,
-        },
+        where: { email },
       });
 
       if (!user) {
@@ -30,32 +28,51 @@ export class AuthService {
       if (!isPasswordMatch) {
         throw new BadRequestException('Email o contraseña incorrectos');
       }
-      const { password: _, ...userWithoutPassword } = user;
 
-      const payload = { ...userWithoutPassword };
-      const access_token = await this.jwtService.signAsync(payload);
-
+      const { password: _p, ...userWithoutPassword } = user;
+      const access_token = await this.jwtService.signAsync(userWithoutPassword);
       return { access_token };
     } catch (error) {
-      if (error instanceof BadRequestException) {
-        throw error;
-      }
+      if (error instanceof BadRequestException) throw error;
       throw new InternalServerErrorException('Error al iniciar sesión');
     }
   }
 
   async getUsers() {
-    return await this.prismaService.user.findMany();
+    return await this.prismaService.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        username: true,
+        status: true,
+        createdAt: true,
+      },
+    });
   }
-  async signUp(email: string, password: string) {
+
+  async signUp(
+    email: string,
+    password: string,
+    firstName: string,
+    lastName: string,
+  ) {
     try {
       const userFound = await this.prismaService.user.findUnique({
-        where: {
-          email,
-        },
+        where: { email },
       });
       if (userFound) {
         throw new BadRequestException('El usuario ya existe');
+      }
+
+      const defaultRole = await this.prismaService.role.findUnique({
+        where: { name: 'USUARIO' },
+      });
+      if (!defaultRole) {
+        throw new InternalServerErrorException(
+          'Rol USUARIO no encontrado. Ejecute el seed primero.',
+        );
       }
 
       const hashedPassword = await hashPassword(password);
@@ -64,16 +81,20 @@ export class AuthService {
         data: {
           email,
           password: hashedPassword,
+          firstName,
+          lastName,
+          roleId: defaultRole.id,
         },
       });
 
-      const { password: _, ...userWithoutPassword } = user;
-
-      const payload = { ...userWithoutPassword };
-      const access_token = await this.jwtService.signAsync(payload);
+      const { password: _p, ...userWithoutPassword } = user;
+      const access_token = await this.jwtService.signAsync(userWithoutPassword);
       return { access_token, user: userWithoutPassword };
     } catch (error) {
-      if (error instanceof BadRequestException) {
+      if (
+        error instanceof BadRequestException ||
+        error instanceof InternalServerErrorException
+      ) {
         throw error;
       }
       throw new InternalServerErrorException('Error al registrar usuario');

@@ -18,6 +18,8 @@ export default class SignUp {
 
   isLoading = signal(false);
   errorMessage = signal<string | null>(null);
+  showPassword = signal(false);
+  showConfirmPassword = signal(false);
 
   form = this._formBuilder.group<signUpForm>(
     {

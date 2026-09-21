@@ -5,10 +5,11 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  UseGuards,
 } from '@nestjs/common';
-
 import { AuthService } from './auth.service';
-import type { UserDTO } from './dto/auth.dto';
+import type { LogInDTO, SignUpDTO } from './dto/auth.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -16,9 +17,11 @@ export class AuthController {
 
   @HttpCode(HttpStatus.OK)
   @Post('log-in')
-  logIn(@Body() user: UserDTO) {
-    return this.authService.logIn(user.email, user.password);
+  logIn(@Body() body: LogInDTO) {
+    return this.authService.logIn(body.email, body.password);
   }
+
+  @UseGuards(JwtAuthGuard)
   @Get('users')
   getUsers() {
     return this.authService.getUsers();
@@ -26,8 +29,12 @@ export class AuthController {
 
   @HttpCode(HttpStatus.CREATED)
   @Post('sign-up')
-  signUp(@Body() user: UserDTO) {
-    console.log({ user });
-    return this.authService.signUp(user.email, user.password);
+  signUp(@Body() body: SignUpDTO) {
+    return this.authService.signUp(
+      body.email,
+      body.password,
+      body.firstName,
+      body.lastName,
+    );
   }
 }

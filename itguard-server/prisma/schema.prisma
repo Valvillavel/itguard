@@ -6,8 +6,275 @@ datasource db {
   provider = "mysql"
 }
 
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum UserStatus {
+  ACTIVO
+  INACTIVO
+}
+
+enum AssetStatus {
+  VIGENTE
+  REQUIERE_ATENCION
+  LIMITADO
+  LEGACY
+  BAJA
+  EN_REPARACION
+  EN_ALMACEN
+}
+
+enum LicenseStatus {
+  ACTIVA
+  VENCIDA
+  SUSPENDIDA
+  DISPONIBLE
+}
+
+enum MaintenanceType {
+  PREVENTIVO
+  CORRECTIVO
+  ACTUALIZACION
+  REEMPLAZO
+  LIMPIEZA
+  DIAGNOSTICO
+}
+
+enum MaintenanceStatus {
+  PENDIENTE
+  EN_PROCESO
+  COMPLETADO
+  CANCELADO
+}
+
+enum IncidentStatus {
+  ABIERTO
+  EN_REVISION
+  EN_ESPERA
+  RESUELTO
+  CERRADO
+}
+
+enum IncidentPriority {
+  BAJA
+  MEDIA
+  ALTA
+  CRITICA
+}
+
+// ─── Role & Department ────────────────────────────────────────────────────────
+
+model Role {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users User[]
+}
+
+model Department {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users  User[]
+  assets Asset[]
+}
+
+// ─── User — mantiene id String UUID y campo password (auth existente intacta) ─
+
 model User {
-  id       String @id @default(uuid())
-  email    String @unique
-  password String
+  id           String     @id @default(uuid())
+  email        String     @unique
+  password     String
+  firstName    String     @default("")
+  lastName     String     @default("")
+  username     String?    @unique
+  phone        String?
+  position     String?
+  status       UserStatus @default(ACTIVO)
+  roleId       Int?
+  departmentId Int?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @default(now()) @updatedAt
+
+  role       Role?       @relation(fields: [roleId], references: [id])
+  department Department? @relation(fields: [departmentId], references: [id])
+
+  assets               Asset[]
+  reportedIncidents    Incident[]          @relation("IncidentReporter")
+  responsibleIncidents Incident[]          @relation("IncidentResponsible")
+  licenseAssignments   LicenseAssignment[] @relation("LicenseAssignedTo")
+  issuedAssignments    LicenseAssignment[] @relation("LicenseAssignedBy")
+}
+
+// ─── Assets ───────────────────────────────────────────────────────────────────
+
+model Asset {
+  id            Int         @id @default(autoincrement())
+  inventoryCode String      @unique
+  name          String
+  type          String
+  brand         String?
+  model         String?
+  serialNumber  String?     @unique
+  operatingSystem String?
+  osVersion       String?
+  osBuild         String?
+  architecture    String?
+  ipAddress       String?
+  macAddress      String?
+  location        String?
+  acquisitionDate    DateTime?
+  warrantyExpiration DateTime?
+  assignmentDate     DateTime?
+  status       AssetStatus @default(VIGENTE)
+  userId       String?
+  departmentId Int?
+  observations String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  user       User?       @relation(fields: [userId], references: [id])
+  department Department? @relation(fields: [departmentId], references: [id])
+
+  hardwareComponents HardwareComponent[]
+  installedSoftware  InstalledSoftware[]
+  maintenance        Maintenance[]
+  incidents          Incident[]
+}
+
+model HardwareComponent {
+  id               Int       @id @default(autoincrement())
+  assetId          Int
+  type             String
+  brand            String?
+  model            String?
+  serialNumber     String?
+  capacity         String?
+  status           String?
+  installationDate DateTime?
+  removalDate      DateTime?
+  observations     String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  asset Asset @relation(fields: [assetId], references: [id])
+}
+
+model Software {
+  id              Int     @id @default(autoincrement())
+  name            String
+  manufacturer    String?
+  category        String?
+  currentVersion  String?
+  requiresLicense Boolean  @default(false)
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  installedSoftware InstalledSoftware[]
+  licenses          License[]
+}
+
+model InstalledSoftware {
+  id         Int       @id @default(autoincrement())
+  assetId    Int
+  softwareId Int
+  version    String?
+  installedAt DateTime?
+  lastCheck   DateTime?
+  status      String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  asset    Asset    @relation(fields: [assetId], references: [id])
+  software Software @relation(fields: [softwareId], references: [id])
+
+  @@unique([assetId, softwareId])
+}
+
+model License {
+  id                Int           @id @default(autoincrement())
+  softwareId        Int
+  licenseType       String
+  reference         String?
+  purchasedQuantity Int
+  usedQuantity      Int           @default(0)
+  purchaseDate      DateTime?
+  activationDate    DateTime?
+  expirationDate    DateTime?
+  provider          String?
+  cost              Decimal?      @db.Decimal(10, 2)
+  status            LicenseStatus @default(ACTIVA)
+  observations      String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  software    Software            @relation(fields: [softwareId], references: [id])
+  assignments LicenseAssignment[]
+}
+
+model LicenseAssignment {
+  id           Int       @id @default(autoincrement())
+  licenseId    Int
+  assetId      Int?
+  userId       String?
+  assignedById String?
+  assignedAt   DateTime  @default(now())
+  unassignedAt DateTime?
+  status       String?
+  observations String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  license    License @relation(fields: [licenseId], references: [id])
+  user       User?   @relation("LicenseAssignedTo", fields: [userId], references: [id])
+  assignedBy User?   @relation("LicenseAssignedBy", fields: [assignedById], references: [id])
+}
+
+model Maintenance {
+  id           Int               @id @default(autoincrement())
+  assetId      Int
+  type         MaintenanceType
+  status       MaintenanceStatus @default(PENDIENTE)
+  date         DateTime
+  description  String?
+  diagnosis    String?
+  workDone     String?
+  technician   String?
+  provider     String?
+  cost         Decimal?          @db.Decimal(10, 2)
+  result       String?
+  observations String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  asset Asset @relation(fields: [assetId], references: [id])
+}
+
+model Incident {
+  id            Int              @id @default(autoincrement())
+  ticketNumber  String           @unique
+  assetId       Int?
+  userId        String?
+  responsibleId String?
+  type          String
+  priority      IncidentPriority @default(MEDIA)
+  status        IncidentStatus   @default(ABIERTO)
+  description   String
+  diagnosis     String?
+  solution      String?
+  openedAt      DateTime         @default(now())
+  closedAt      DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  asset       Asset? @relation(fields: [assetId], references: [id])
+  user        User?  @relation("IncidentReporter", fields: [userId], references: [id])
+  responsible User?  @relation("IncidentResponsible", fields: [responsibleId], references: [id])
 }

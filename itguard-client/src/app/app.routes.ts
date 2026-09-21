@@ -4,13 +4,13 @@ import { privateGuard, publicGuard } from './auth/shared/auth.guard';
 export const routes: Routes = [
   {
     path: 'auth',
-    canActivate: [publicGuard],
+    canActivate: [publicGuard()],
     loadChildren: () => import('./auth/shell/auth.routes'),
   },
   {
     path: 'dashboard',
-    canActivate: [privateGuard],
-    loadComponent: () => import('./feature/dashboard/dashboard'),
+    canActivate: [privateGuard()],
+    loadComponent: () => import('./feature/dashboard/components/dashboard/dashboard'),
   },
   {
     path: '**',

@@ -9,7 +9,7 @@ export const privateGuard = (): CanActivateFn => {
 
     const session = authStateService.getSession();
     if (!session) {
-      router.navigate(['/login']);
+      router.navigate(['/auth/log-in']);
       return false;
     }
     return true;

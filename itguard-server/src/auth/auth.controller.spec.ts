@@ -1,13 +1,25 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 describe('AuthController', () => {
   let controller: AuthController;
 
+  const mockAuthService = {
+    logIn: jest.fn().mockResolvedValue({ access_token: 'token' }),
+    getUsers: jest.fn().mockResolvedValue([]),
+    signUp: jest.fn().mockResolvedValue({ access_token: 'token', user: {} }),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
-    }).compile();
+      providers: [{ provide: AuthService, useValue: mockAuthService }],
+    })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: jest.fn().mockReturnValue(true) })
+      .compile();
 
     controller = module.get<AuthController>(AuthController);
   });
@@ -16,3 +28,4 @@ describe('AuthController', () => {
     expect(controller).toBeDefined();
   });
 });
+
