@@ -54,7 +54,6 @@ async function main() {
     create: { name: 'RECURSOS_HUMANOS', description: 'Recursos Humanos' },
   });
 
-  // Usuario administrador — contraseña hasheada con bcrypt
   const hashedPassword = await bcrypt.hash('Admin123!', 10);
   await prisma.user.upsert({
     where: { email: 'admin@itguard.com' },
@@ -65,6 +64,7 @@ async function main() {
       firstName: 'Admin',
       lastName: 'ITGuard',
       username: 'admin',
+      status: 'ACTIVO',
       roleId: adminRole.id,
       departmentId: tiDept.id,
     },

@@ -96,7 +96,7 @@ model User {
   username     String?    @unique
   phone        String?
   position     String?
-  status       UserStatus @default(ACTIVO)
+  status       UserStatus @default(INACTIVO)
   roleId       Int?
   departmentId Int?
   createdAt    DateTime   @default(now())

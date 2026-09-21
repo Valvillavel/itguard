@@ -18,11 +18,20 @@ export default class SignUp {
 
   isLoading = signal(false);
   errorMessage = signal<string | null>(null);
+  successMessage = signal<string | null>(null);
   showPassword = signal(false);
   showConfirmPassword = signal(false);
 
   form = this._formBuilder.group<signUpForm>(
     {
+      firstName: this._formBuilder.nonNullable.control('', [
+        Validators.required,
+        Validators.minLength(2),
+      ]),
+      lastName: this._formBuilder.nonNullable.control('', [
+        Validators.required,
+        Validators.minLength(2),
+      ]),
       email: this._formBuilder.nonNullable.control('', [Validators.required, Validators.email]),
       password: this._formBuilder.nonNullable.control('', [
         Validators.required,
@@ -33,6 +42,12 @@ export default class SignUp {
     { validators: passwordMatchValidator() },
   );
 
+  get firstName() {
+    return this.form.controls.firstName;
+  }
+  get lastName() {
+    return this.form.controls.lastName;
+  }
   get email() {
     return this.form.controls.email;
   }
@@ -58,12 +73,15 @@ export default class SignUp {
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
-    const { email, password } = this.form.getRawValue();
+    const { email, password, firstName, lastName } = this.form.getRawValue();
 
-    this._authService.signUp(email, password).subscribe({
+    this._authService.signUp(email, password, firstName, lastName).subscribe({
       next: () => {
         this.isLoading.set(false);
-        this._router.navigate(['/auth/log-in']);
+        this.successMessage.set(
+          'Cuenta creada exitosamente. Podrás iniciar sesión una vez que un administrador active tu cuenta.',
+        );
+        setTimeout(() => this._router.navigate(['/auth/log-in']), 4000);
       },
       error: (err) => {
         this.isLoading.set(false);
@@ -72,9 +90,11 @@ export default class SignUp {
     });
   }
 
-  private getErrorMessage(err: any): string {
-    if (err?.status === 409) return 'Este correo ya está registrado.';
-    if (err?.status === 0) return 'No se pudo conectar con el servidor. Intenta más tarde.';
+  private getErrorMessage(err: unknown): string {
+    const e = err as { status?: number; error?: { message?: string } };
+    if (e?.status === 400) return e?.error?.message ?? 'Datos inválidos. Verifica el formulario.';
+    if (e?.status === 409) return 'Este correo ya está registrado.';
+    if (e?.status === 0) return 'No se pudo conectar con el servidor. Intenta más tarde.';
     return 'Ocurrió un error al crear la cuenta. Intenta de nuevo.';
   }
 }

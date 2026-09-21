@@ -18,6 +18,7 @@ export class AuthService {
     try {
       const user = await this.prismaService.user.findUnique({
         where: { email },
+        include: { role: true },
       });
 
       if (!user) {
@@ -27,6 +28,10 @@ export class AuthService {
       const isPasswordMatch = await comparePassword(password, user.password);
       if (!isPasswordMatch) {
         throw new BadRequestException('Email o contraseña incorrectos');
+      }
+
+      if (user.status !== 'ACTIVO') {
+        throw new BadRequestException('Tu cuenta está inactiva. Contacta al administrador.');
       }
 
       const { password: _p, ...userWithoutPassword } = user;

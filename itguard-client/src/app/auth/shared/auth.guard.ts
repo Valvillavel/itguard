@@ -4,11 +4,9 @@ import { AuthStateService } from './auth-state.service';
 
 export const privateGuard = (): CanActivateFn => {
   return () => {
-    const authStateService = inject(AuthStateService);
+    const authState = inject(AuthStateService);
     const router = inject(Router);
-
-    const session = authStateService.getSession();
-    if (!session) {
+    if (!authState.getSession()) {
       router.navigate(['/auth/log-in']);
       return false;
     }
@@ -18,10 +16,27 @@ export const privateGuard = (): CanActivateFn => {
 
 export const publicGuard = (): CanActivateFn => {
   return () => {
-    const authStateService = inject(AuthStateService);
+    const authState = inject(AuthStateService);
     const router = inject(Router);
-    const session = authStateService.getSession();
-    if (session) {
+    if (authState.getSession()) {
+      router.navigate(['/dashboard']);
+      return false;
+    }
+    return true;
+  };
+};
+
+export const roleGuard = (allowedRoles: string[]): CanActivateFn => {
+  return () => {
+    const authState = inject(AuthStateService);
+    const router = inject(Router);
+    const user = authState.currentUser();
+    if (!user) {
+      router.navigate(['/auth/log-in']);
+      return false;
+    }
+    const roleName = user.role?.name;
+    if (!roleName || !allowedRoles.includes(roleName)) {
       router.navigate(['/dashboard']);
       return false;
     }

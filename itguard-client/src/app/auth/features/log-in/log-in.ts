@@ -58,10 +58,12 @@ export default class LogIn {
     });
   }
 
-  private getErrorMessage(err: any): string {
-    if (err?.status === 401) return 'Correo o contraseña incorrectos.';
-    if (err?.status === 404) return 'No existe una cuenta con ese correo.';
-    if (err?.status === 0) return 'No se pudo conectar con el servidor. Intenta más tarde.';
+  private getErrorMessage(err: unknown): string {
+    const e = err as { status?: number; error?: { message?: string } };
+    if (e?.status === 400) return e?.error?.message ?? 'Email o contraseña incorrectos.';
+    if (e?.status === 401) return 'Correo o contraseña incorrectos.';
+    if (e?.status === 404) return 'No existe una cuenta con ese correo.';
+    if (e?.status === 0) return 'No se pudo conectar con el servidor. Intenta más tarde.';
     return 'Ocurrió un error al iniciar sesión. Intenta de nuevo.';
   }
 }
