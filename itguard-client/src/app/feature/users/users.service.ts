@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import type { Role, User, UpdateUserPayload } from '../shared/models';
 
@@ -12,7 +13,9 @@ export class UsersService {
   private API_URL = environment.API_URL;
 
   getAll(): Observable<User[]> {
-    return this._http.get<User[]>(`${this.API_URL}/users`);
+    return this._http
+      .get<{ data: User[] } | User[]>(`${this.API_URL}/users`)
+      .pipe(map((res) => (Array.isArray(res) ? res : res.data)));
   }
 
   getById(id: string): Observable<User> {

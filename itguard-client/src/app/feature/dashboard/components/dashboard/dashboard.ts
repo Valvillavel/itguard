@@ -1,7 +1,7 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { AuthStateService } from '../../../../auth/shared/auth-state.service';
 import { DashboardService } from '../../services/dashboard.service';
-import type { DashboardStats } from '../../interfaces/users';
+import type { DashboardStats } from '../../services/dashboard.service';
 
 @Component({
   selector: 'app-dashboard',

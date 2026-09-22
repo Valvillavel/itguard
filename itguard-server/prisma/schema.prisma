@@ -85,7 +85,7 @@ model Department {
   assets Asset[]
 }
 
-// ─── User — mantiene id String UUID y campo password (auth existente intacta) ─
+// ─── User — mantiene id String UUID y campo password
 
 model User {
   id           String     @id @default(uuid())
@@ -112,7 +112,7 @@ model User {
   issuedAssignments    LicenseAssignment[] @relation("LicenseAssignedBy")
 }
 
-// ─── Assets ───────────────────────────────────────────────────────────────────
+// ─── Assets ──────────────────────────────────────────────
 
 model Asset {
   id            Int         @id @default(autoincrement())

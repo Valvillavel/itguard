@@ -1,4 +1,4 @@
-import {
+﻿import {
   Body,
   Controller,
   Delete,
@@ -12,18 +12,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { HardwareComponentsService } from './hardware-components.service';
-import type {
-  CreateHardwareComponentDTO,
-  UpdateHardwareComponentDTO,
-} from './dto/hardware-component.dto';
+import { CreateHardwareComponentDTO, UpdateHardwareComponentDTO } from './dto/hardware-component.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @UseGuards(JwtAuthGuard)
 @Controller('hardware-components')
 export class HardwareComponentsController {
-  constructor(
-    private readonly hardwareComponentsService: HardwareComponentsService,
-  ) {}
+  constructor(private readonly hardwareComponentsService: HardwareComponentsService) {}
 
   @Get()
   findAll() {
@@ -42,10 +37,7 @@ export class HardwareComponentsController {
   }
 
   @Patch(':id')
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateHardwareComponentDTO,
-  ) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateHardwareComponentDTO) {
     return this.hardwareComponentsService.update(id, dto);
   }
 

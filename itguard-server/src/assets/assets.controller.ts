@@ -1,4 +1,4 @@
-import {
+﻿import {
   Body,
   Controller,
   Delete,
@@ -9,10 +9,11 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { AssetsService } from './assets.service';
-import type {
+import {
   AssignDepartmentDTO,
   AssignUserDTO,
   ChangeAssetStatusDTO,
@@ -20,6 +21,7 @@ import type {
   UpdateAssetDTO,
 } from './dto/asset.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { PaginationQueryDto } from 'src/common/dto/pagination.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('assets')
@@ -27,8 +29,8 @@ export class AssetsController {
   constructor(private readonly assetsService: AssetsService) {}
 
   @Get()
-  findAll() {
-    return this.assetsService.findAll();
+  findAll(@Query() query: PaginationQueryDto) {
+    return this.assetsService.findAll(query);
   }
 
   @Get(':id')
@@ -48,26 +50,17 @@ export class AssetsController {
   }
 
   @Patch(':id/status')
-  changeStatus(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: ChangeAssetStatusDTO,
-  ) {
+  changeStatus(@Param('id', ParseIntPipe) id: number, @Body() dto: ChangeAssetStatusDTO) {
     return this.assetsService.changeStatus(id, dto);
   }
 
   @Patch(':id/assign-user')
-  assignUser(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: AssignUserDTO,
-  ) {
+  assignUser(@Param('id', ParseIntPipe) id: number, @Body() dto: AssignUserDTO) {
     return this.assetsService.assignUser(id, dto);
   }
 
   @Patch(':id/assign-department')
-  assignDepartment(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: AssignDepartmentDTO,
-  ) {
+  assignDepartment(@Param('id', ParseIntPipe) id: number, @Body() dto: AssignDepartmentDTO) {
     return this.assetsService.assignDepartment(id, dto);
   }
 

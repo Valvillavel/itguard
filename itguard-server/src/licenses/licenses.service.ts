@@ -1,20 +1,49 @@
-import {
+﻿import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import type { CreateLicenseDTO, UpdateLicenseDTO } from './dto/license.dto';
+import { CreateLicenseDTO, UpdateLicenseDTO } from './dto/license.dto';
 
 @Injectable()
 export class LicensesService {
   constructor(private prismaService: PrismaService) {}
 
-  async findAll() {
-    return await this.prismaService.license.findMany({
-      include: { software: true },
-    });
+  async findAll(
+    query: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      status?: string;
+    } = {},
+  ) {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 50;
+    const skip = (page - 1) * limit;
+    const where: Record<string, unknown> = {};
+    if (query.search) {
+      where['OR'] = [
+        { licenseType: { contains: query.search } },
+        { reference: { contains: query.search } },
+        { provider: { contains: query.search } },
+      ];
+    }
+    if (query.status) where['status'] = query.status;
+    const [data, total] = await Promise.all([
+      this.prismaService.license.findMany({
+        where,
+        skip,
+        take: limit,
+        include: { software: true },
+      }),
+      this.prismaService.license.count({ where }),
+    ]);
+    return {
+      data,
+      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    };
   }
 
   async findOne(id: number) {

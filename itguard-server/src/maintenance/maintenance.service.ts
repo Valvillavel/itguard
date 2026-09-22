@@ -1,11 +1,11 @@
-import {
+﻿import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import type {
+import {
   CreateMaintenanceDTO,
   UpdateMaintenanceDTO,
 } from './dto/maintenance.dto';
@@ -14,11 +14,41 @@ import type {
 export class MaintenanceService {
   constructor(private prismaService: PrismaService) {}
 
-  async findAll() {
-    return await this.prismaService.maintenance.findMany({
-      include: { asset: true },
-      orderBy: { date: 'desc' },
-    });
+  async findAll(
+    query: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      status?: string;
+      type?: string;
+    } = {},
+  ) {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 50;
+    const skip = (page - 1) * limit;
+    const where: Record<string, unknown> = {};
+    if (query.search) {
+      where['OR'] = [
+        { technician: { contains: query.search } },
+        { description: { contains: query.search } },
+      ];
+    }
+    if (query.status) where['status'] = query.status;
+    if (query.type) where['type'] = query.type;
+    const [data, total] = await Promise.all([
+      this.prismaService.maintenance.findMany({
+        where,
+        skip,
+        take: limit,
+        include: { asset: true },
+        orderBy: { date: 'desc' },
+      }),
+      this.prismaService.maintenance.count({ where }),
+    ]);
+    return {
+      data,
+      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    };
   }
 
   async findOne(id: number) {

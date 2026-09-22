@@ -1,4 +1,4 @@
-import {
+﻿import {
   Body,
   Controller,
   Delete,
@@ -9,11 +9,13 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { IncidentsService } from './incidents.service';
-import type { CreateIncidentDTO, UpdateIncidentDTO } from './dto/incident.dto';
+import { CreateIncidentDTO, UpdateIncidentDTO } from './dto/incident.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { PaginationQueryDto } from 'src/common/dto/pagination.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('incidents')
@@ -21,8 +23,8 @@ export class IncidentsController {
   constructor(private readonly incidentsService: IncidentsService) {}
 
   @Get()
-  findAll() {
-    return this.incidentsService.findAll();
+  findAll(@Query() query: PaginationQueryDto) {
+    return this.incidentsService.findAll(query);
   }
 
   @Get(':id')
@@ -37,10 +39,7 @@ export class IncidentsController {
   }
 
   @Patch(':id')
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateIncidentDTO,
-  ) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateIncidentDTO) {
     return this.incidentsService.update(id, dto);
   }
 

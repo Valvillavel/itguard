@@ -5,7 +5,8 @@ import Topbar from './components/topbar/topbar';
 
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, Sidebar, Topbar],
+  imports: [
+    RouterOutlet, Sidebar, Topbar],
   templateUrl: './shell.html',
 })
 export default class Shell {

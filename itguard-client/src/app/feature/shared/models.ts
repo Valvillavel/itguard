@@ -30,6 +30,8 @@ export interface Department {
   name: string;
   description?: string | null;
   active: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface User {
@@ -57,9 +59,20 @@ export interface Asset {
   brand?: string | null;
   model?: string | null;
   serialNumber?: string | null;
+  operatingSystem?: string | null;
+  osVersion?: string | null;
+  osBuild?: string | null;
+  architecture?: string | null;
+  ipAddress?: string | null;
+  macAddress?: string | null;
+  location?: string | null;
+  acquisitionDate?: string | null;
+  warrantyExpiration?: string | null;
+  assignmentDate?: string | null;
   status: AssetStatus;
   userId?: string | null;
   departmentId?: number | null;
+  observations?: string | null;
   user?: Pick<User, 'id' | 'firstName' | 'lastName' | 'email'> | null;
   department?: Pick<Department, 'id' | 'name'> | null;
   createdAt: string;

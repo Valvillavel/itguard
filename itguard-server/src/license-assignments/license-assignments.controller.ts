@@ -1,4 +1,4 @@
-import {
+﻿import {
   Body,
   Controller,
   Delete,
@@ -12,18 +12,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { LicenseAssignmentsService } from './license-assignments.service';
-import type {
-  CreateLicenseAssignmentDTO,
-  UnassignLicenseDTO,
-} from './dto/license-assignment.dto';
+import { CreateLicenseAssignmentDTO, UnassignLicenseDTO } from './dto/license-assignment.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @UseGuards(JwtAuthGuard)
 @Controller('license-assignments')
 export class LicenseAssignmentsController {
-  constructor(
-    private readonly licenseAssignmentsService: LicenseAssignmentsService,
-  ) {}
+  constructor(private readonly licenseAssignmentsService: LicenseAssignmentsService) {}
 
   @Get()
   findAll() {
@@ -42,10 +37,7 @@ export class LicenseAssignmentsController {
   }
 
   @Patch(':id/unassign')
-  unassign(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UnassignLicenseDTO,
-  ) {
+  unassign(@Param('id', ParseIntPipe) id: number, @Body() dto: UnassignLicenseDTO) {
     return this.licenseAssignmentsService.unassign(id, dto);
   }
 

@@ -13,6 +13,7 @@ import { LicensesModule } from './licenses/licenses.module';
 import { LicenseAssignmentsModule } from './license-assignments/license-assignments.module';
 import { MaintenanceModule } from './maintenance/maintenance.module';
 import { IncidentsModule } from './incidents/incidents.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { IncidentsModule } from './incidents/incidents.module';
     LicenseAssignmentsModule,
     MaintenanceModule,
     IncidentsModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -44,6 +44,15 @@ export const routes: Routes = [
         loadComponent: () => import('./feature/licenses/licenses'),
       },
       {
+        path: 'asignaciones',
+        canActivate: [roleGuard(['ADMINISTRADOR_TI'])],
+        loadComponent: () => import('./feature/license-assignments/license-assignments-fe'),
+      },
+      {
+        path: 'software-instalado',
+        loadComponent: () => import('./feature/installed-software/installed-software-fe'),
+      },
+      {
         path: 'mantenimientos',
         loadComponent: () => import('./feature/maintenance/maintenance'),
       },

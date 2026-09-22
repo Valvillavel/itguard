@@ -1,11 +1,11 @@
-import {
+﻿import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import type { CreateIncidentDTO, UpdateIncidentDTO } from './dto/incident.dto';
+import { CreateIncidentDTO, UpdateIncidentDTO } from './dto/incident.dto';
 
 const INCIDENT_INCLUDE = {
   asset: { select: { id: true, name: true, inventoryCode: true } },
@@ -19,11 +19,40 @@ const INCIDENT_INCLUDE = {
 export class IncidentsService {
   constructor(private prismaService: PrismaService) {}
 
-  async findAll() {
-    return await this.prismaService.incident.findMany({
-      include: INCIDENT_INCLUDE,
-      orderBy: { openedAt: 'desc' },
-    });
+  async findAll(
+    query: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      status?: string;
+    } = {},
+  ) {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 50;
+    const skip = (page - 1) * limit;
+    const where: Record<string, unknown> = {};
+    if (query.search) {
+      where['OR'] = [
+        { ticketNumber: { contains: query.search } },
+        { type: { contains: query.search } },
+        { description: { contains: query.search } },
+      ];
+    }
+    if (query.status) where['status'] = query.status;
+    const [data, total] = await Promise.all([
+      this.prismaService.incident.findMany({
+        where,
+        skip,
+        take: limit,
+        include: INCIDENT_INCLUDE,
+        orderBy: { openedAt: 'desc' },
+      }),
+      this.prismaService.incident.count({ where }),
+    ]);
+    return {
+      data,
+      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    };
   }
 
   async findOne(id: number) {

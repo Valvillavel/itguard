@@ -6,7 +6,11 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { hashPassword } from 'src/libs/bcrypt';
-import type { CreateUserDTO, UpdateUserDTO } from './dto/user.dto';
+import { CreateUserDTO, UpdateUserDTO } from './dto/user.dto';
+import {
+  PaginationQueryDto,
+  buildPaginatedResponse,
+} from 'src/common/dto/pagination.dto';
 
 const USER_SELECT = {
   id: true,
@@ -29,8 +33,35 @@ const USER_SELECT = {
 export class UsersService {
   constructor(private prismaService: PrismaService) {}
 
-  async findAll() {
-    return await this.prismaService.user.findMany({ select: USER_SELECT });
+  async findAll(query: PaginationQueryDto = {}) {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 50;
+    const skip = (page - 1) * limit;
+    const search = query.search;
+    const statusFilter = query.status;
+
+    const where: Record<string, unknown> = {};
+    if (search) {
+      where['OR'] = [
+        { firstName: { contains: search } },
+        { lastName: { contains: search } },
+        { email: { contains: search } },
+        { username: { contains: search } },
+      ];
+    }
+    if (statusFilter) where['status'] = statusFilter;
+
+    const [data, total] = await Promise.all([
+      this.prismaService.user.findMany({
+        where,
+        skip,
+        take: limit,
+        select: USER_SELECT,
+      }),
+      this.prismaService.user.count({ where }),
+    ]);
+
+    return buildPaginatedResponse(data, total, page, limit);
   }
 
   async findOne(id: string) {

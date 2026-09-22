@@ -1,11 +1,11 @@
-import {
+﻿import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import type {
+import {
   AssignDepartmentDTO,
   AssignUserDTO,
   ChangeAssetStatusDTO,
@@ -22,8 +22,40 @@ const ASSET_INCLUDE = {
 export class AssetsService {
   constructor(private prismaService: PrismaService) {}
 
-  async findAll() {
-    return await this.prismaService.asset.findMany({ include: ASSET_INCLUDE });
+  async findAll(
+    query: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      status?: string;
+    } = {},
+  ) {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 50;
+    const skip = (page - 1) * limit;
+    const where: Record<string, unknown> = {};
+    if (query.search) {
+      where['OR'] = [
+        { name: { contains: query.search } },
+        { inventoryCode: { contains: query.search } },
+        { type: { contains: query.search } },
+        { brand: { contains: query.search } },
+      ];
+    }
+    if (query.status) where['status'] = query.status;
+    const [data, total] = await Promise.all([
+      this.prismaService.asset.findMany({
+        where,
+        skip,
+        take: limit,
+        include: ASSET_INCLUDE,
+      }),
+      this.prismaService.asset.count({ where }),
+    ]);
+    return {
+      data,
+      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    };
   }
 
   async findOne(id: number) {

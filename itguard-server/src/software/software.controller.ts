@@ -1,4 +1,4 @@
-import {
+﻿import {
   Body,
   Controller,
   Delete,
@@ -9,11 +9,13 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { SoftwareService } from './software.service';
-import type { CreateSoftwareDTO, UpdateSoftwareDTO } from './dto/software.dto';
+import { CreateSoftwareDTO, UpdateSoftwareDTO } from './dto/software.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { PaginationQueryDto } from 'src/common/dto/pagination.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('software')
@@ -21,8 +23,8 @@ export class SoftwareController {
   constructor(private readonly softwareService: SoftwareService) {}
 
   @Get()
-  findAll() {
-    return this.softwareService.findAll();
+  findAll(@Query() query: PaginationQueryDto) {
+    return this.softwareService.findAll(query);
   }
 
   @Get(':id')
@@ -37,10 +39,7 @@ export class SoftwareController {
   }
 
   @Patch(':id')
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateSoftwareDTO,
-  ) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateSoftwareDTO) {
     return this.softwareService.update(id, dto);
   }
 

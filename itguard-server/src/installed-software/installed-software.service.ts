@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import type {
+import {
   CreateInstalledSoftwareDTO,
   UpdateInstalledSoftwareDTO,
 } from './dto/installed-software.dto';

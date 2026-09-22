@@ -1,9 +1,15 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { forkJoin, map, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import type { User, Asset, Incident, Maintenance } from '../interfaces/users';
-import type { DashboardStats } from '../interfaces/users';
+
+export interface DashboardStats {
+  users: { total: number; active: number; inactive: number };
+  assets: { total: number; byStatus: Record<string, number> };
+  licenses: { total: number; active: number; expired: number };
+  incidents: { open: number; inReview: number; resolved: number };
+  maintenance: { pending: number; inProcess: number; completed: number };
+}
 
 @Injectable({
   providedIn: 'root',
@@ -13,18 +19,6 @@ export class DashboardService {
   private API_URL = environment.API_URL;
 
   getStats(): Observable<DashboardStats> {
-    return forkJoin({
-      users: this._http.get<User[]>(`${this.API_URL}/users`),
-      assets: this._http.get<Asset[]>(`${this.API_URL}/assets`),
-      incidents: this._http.get<Incident[]>(`${this.API_URL}/incidents`),
-      maintenance: this._http.get<Maintenance[]>(`${this.API_URL}/maintenance`),
-    }).pipe(
-      map((data) => ({
-        totalUsers: data.users.length,
-        totalAssets: data.assets.length,
-        openIncidents: data.incidents.filter((i) => i.status === 'ABIERTO').length,
-        pendingMaintenance: data.maintenance.filter((m) => m.status === 'PENDIENTE').length,
-      })),
-    );
+    return this._http.get<DashboardStats>(`${this.API_URL}/dashboard/stats`);
   }
 }

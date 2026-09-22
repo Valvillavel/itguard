@@ -1,4 +1,4 @@
-import {
+﻿import {
   Body,
   Controller,
   Delete,
@@ -9,11 +9,13 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { LicensesService } from './licenses.service';
-import type { CreateLicenseDTO, UpdateLicenseDTO } from './dto/license.dto';
+import { CreateLicenseDTO, UpdateLicenseDTO } from './dto/license.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { PaginationQueryDto } from 'src/common/dto/pagination.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('licenses')
@@ -21,8 +23,8 @@ export class LicensesController {
   constructor(private readonly licensesService: LicensesService) {}
 
   @Get()
-  findAll() {
-    return this.licensesService.findAll();
+  findAll(@Query() query: PaginationQueryDto) {
+    return this.licensesService.findAll(query);
   }
 
   @Get(':id')

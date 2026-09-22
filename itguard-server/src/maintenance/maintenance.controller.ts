@@ -1,4 +1,4 @@
-import {
+﻿import {
   Body,
   Controller,
   Delete,
@@ -9,14 +9,13 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { MaintenanceService } from './maintenance.service';
-import type {
-  CreateMaintenanceDTO,
-  UpdateMaintenanceDTO,
-} from './dto/maintenance.dto';
+import { CreateMaintenanceDTO, UpdateMaintenanceDTO } from './dto/maintenance.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { PaginationQueryDto } from 'src/common/dto/pagination.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('maintenance')
@@ -24,8 +23,8 @@ export class MaintenanceController {
   constructor(private readonly maintenanceService: MaintenanceService) {}
 
   @Get()
-  findAll() {
-    return this.maintenanceService.findAll();
+  findAll(@Query() query: PaginationQueryDto) {
+    return this.maintenanceService.findAll(query);
   }
 
   @Get(':id')
@@ -40,10 +39,7 @@ export class MaintenanceController {
   }
 
   @Patch(':id')
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateMaintenanceDTO,
-  ) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateMaintenanceDTO) {
     return this.maintenanceService.update(id, dto);
   }
 

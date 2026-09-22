@@ -43,7 +43,7 @@
             </svg>
           </div>
         </div>
-        <p class="text-3xl font-bold text-slate-900">{{ stats()!.totalUsers }}</p>
+        <p class="text-3xl font-bold text-slate-900">{{ stats()!.users.total }}</p>
         <p class="text-xs text-slate-400 mt-1">Registrados en el sistema</p>
       </div>
 
@@ -66,7 +66,7 @@
             </svg>
           </div>
         </div>
-        <p class="text-3xl font-bold text-slate-900">{{ stats()!.totalAssets }}</p>
+        <p class="text-3xl font-bold text-slate-900">{{ stats()!.assets.total }}</p>
         <p class="text-xs text-slate-400 mt-1">Equipos inventariados</p>
       </div>
 
@@ -92,7 +92,7 @@
             </svg>
           </div>
         </div>
-        <p class="text-3xl font-bold text-slate-900">{{ stats()!.openIncidents }}</p>
+        <p class="text-3xl font-bold text-slate-900">{{ stats()!.incidents.open }}</p>
         <p class="text-xs text-slate-400 mt-1">Requieren atención</p>
       </div>
 
@@ -119,7 +119,7 @@
             </svg>
           </div>
         </div>
-        <p class="text-3xl font-bold text-slate-900">{{ stats()!.pendingMaintenance }}</p>
+        <p class="text-3xl font-bold text-slate-900">{{ stats()!.maintenance.pending }}</p>
         <p class="text-xs text-slate-400 mt-1">Pendientes de ejecución</p>
       </div>
     </div>

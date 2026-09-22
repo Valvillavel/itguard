@@ -1,4 +1,4 @@
-import {
+﻿import {
   Body,
   Controller,
   Delete,
@@ -12,18 +12,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { InstalledSoftwareService } from './installed-software.service';
-import type {
-  CreateInstalledSoftwareDTO,
-  UpdateInstalledSoftwareDTO,
-} from './dto/installed-software.dto';
+import { CreateInstalledSoftwareDTO, UpdateInstalledSoftwareDTO } from './dto/installed-software.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @UseGuards(JwtAuthGuard)
 @Controller('installed-software')
 export class InstalledSoftwareController {
-  constructor(
-    private readonly installedSoftwareService: InstalledSoftwareService,
-  ) {}
+  constructor(private readonly installedSoftwareService: InstalledSoftwareService) {}
 
   @Get()
   findAll() {
@@ -42,10 +37,7 @@ export class InstalledSoftwareController {
   }
 
   @Patch(':id')
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateInstalledSoftwareDTO,
-  ) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateInstalledSoftwareDTO) {
     return this.installedSoftwareService.update(id, dto);
   }
 

@@ -30,7 +30,9 @@ const NAV_SECTIONS: NavSection[] = [
       { label: 'Activos', route: '/activos' },
       { label: 'Componentes', route: '/componentes' },
       { label: 'Software', route: '/software' },
+      { label: 'S. Instalado', route: '/software-instalado' },
       { label: 'Licencias', route: '/licencias', roles: ['ADMINISTRADOR_TI'] },
+      { label: 'Asignaciones', route: '/asignaciones', roles: ['ADMINISTRADOR_TI'] },
     ],
   },
   {
